@@ -3,5 +3,5 @@ idf_component_register(
          "src/zigbee_button.cpp"
          "src/zgp_stub.c"
     INCLUDE_DIRS "include"
-    REQUIRES esp_zigbee_lib nvs_flash driver
+    REQUIRES espressif__esp-zigbee-lib nvs_flash esp_driver_gpio
 )
