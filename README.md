@@ -35,11 +35,34 @@ UART-based command-line interface framework:
 
 ## Integration
 
-Add to your project's top-level `CMakeLists.txt`:
+### Method 1: ESP-IDF Component Manager (Recommended)
+
+Add to your project's `main/idf_component.yml`:
+
+```yaml
+dependencies:
+  board_led:
+    git: https://github.com/ShaunPCcom/esp32-zigbee-common.git
+    path: board_led
+  zigbee_core:
+    git: https://github.com/ShaunPCcom/esp32-zigbee-common.git
+    path: zigbee_core
+  # Add other components as needed:
+  # nvs_helpers, cli_framework
+```
+
+Components are automatically downloaded to `managed_components/` during build.
+
+### Method 2: Local Development (EXTRA_COMPONENT_DIRS)
+
+For local development with live editing:
 
 ```cmake
-set(EXTRA_COMPONENT_DIRS "/home/shaun/src/esp32-zigbee-common")
+# CMakeLists.txt
+set(EXTRA_COMPONENT_DIRS "/path/to/esp32-zigbee-common")
 ```
+
+### Usage in Code
 
 Then use in your code:
 
@@ -62,9 +85,17 @@ NvsStore config("my_namespace");
 
 ## Status
 
-- **Phase 0 (2026-02-21)**: Repository structure created, empty placeholders
-- **Phase 1 (planned)**: Implement BoardLed, NvsStore, ButtonHandler classes
-- **Phase 2+ (planned)**: Full migration of LED and LD2450 projects
+- **Phase 0 (2026-02-21)**: ✅ Repository structure created, component placeholders
+- **Phase 1 (2026-02-21)**: ✅ BoardLed and ButtonHandler implemented and integrated
+  - Published to GitHub: https://github.com/ShaunPCcom/esp32-zigbee-common
+  - In use by: zb-h2-LED-lighting project (v1.1.1+)
+  - Integration: ESP-IDF Component Manager
+- **Phase 2+ (future)**: Full migration of LD2450 project, additional shared utilities
+
+## Projects Using This
+
+- **zb-h2-LED-lighting** (v1.1.1+): BoardLed, ButtonHandler via Component Manager
+- **ld2450-zb-h2** (planned): Will use same components for code sharing
 
 ## License
 
