@@ -1,11 +1,26 @@
 # Build artifacts
 build/
+managed_components/
 *.o
 *.a
+
+# Firmware / linker artifacts
+*.bin
+*.elf
+*.map
+*.hex
+*.ota
+
+# Tooling / indexes
+compile_commands.json
+sdkconfig.old
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # System
 .DS_Store

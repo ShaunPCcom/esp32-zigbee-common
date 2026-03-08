@@ -4,6 +4,10 @@
 #include "esp_err.h"
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file crash_diag.h
  * @brief Crash diagnostics and telemetry for remote debugging
@@ -77,3 +81,7 @@ const char *crash_diag_reset_reason_str(uint8_t reason);
  * @param uptime_sec  Current uptime in seconds
  */
 void crash_diag_update_uptime(uint32_t uptime_sec);
+
+#ifdef __cplusplus
+}
+#endif
