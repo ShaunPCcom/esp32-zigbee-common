@@ -10,12 +10,18 @@
 
 static const char *TAG = "zigbee_ctrl";
 
+static void restart_cb(uint8_t param)
+{
+    (void)param;
+    esp_restart();
+}
+
 void zgb_ctrl_handle_restart(void)
 {
     ESP_LOGI(TAG, "Restart requested via Zigbee, restarting in 1s...");
     /* Delay so the ZCL Write Attributes Response is sent before reset.
      * Without this delay Z2M may retry the write after reconnect -> double reboot. */
-    esp_zb_scheduler_alarm((esp_zb_callback_t)esp_restart, 0, 1000);
+    esp_zb_scheduler_alarm(restart_cb, 0, 1000);
 }
 
 void zgb_ctrl_handle_factory_reset(uint8_t value, void (*project_reset_fn)(void))

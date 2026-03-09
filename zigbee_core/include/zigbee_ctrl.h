@@ -49,8 +49,9 @@ void zgb_ctrl_handle_restart(void);
  *                     Called only when value == ZB_FACTORY_RESET_MAGIC (0xFE).
  *                     This function is responsible for erasing NVS and calling
  *                     esp_zb_factory_reset() or equivalent.
+ *                     Must not be NULL; a NULL pointer logs an error and aborts the reset.
  *
- * Any value other than 0xFE is silently ignored.
+ * Any value other than 0xFE is ignored (a warning is logged).
  */
 void zgb_ctrl_handle_factory_reset(uint8_t value, void (*project_reset_fn)(void));
 
