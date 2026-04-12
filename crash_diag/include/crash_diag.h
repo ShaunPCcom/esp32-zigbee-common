@@ -82,6 +82,15 @@ const char *crash_diag_reset_reason_str(uint8_t reason);
  */
 void crash_diag_update_uptime(uint32_t uptime_sec);
 
+/**
+ * Reset the NVS boot counter to 0.
+ *
+ * The in-memory boot count is also cleared immediately. The next boot
+ * will increment from 0 to 1.  Useful for clearing accumulated counts
+ * after a firmware deployment or debugging session.
+ */
+void crash_diag_reset_boot_count(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -158,3 +158,26 @@ void crash_diag_update_uptime(uint32_t uptime_sec)
 {
     rtc_data.uptime_sec = uptime_sec;
 }
+
+void crash_diag_reset_boot_count(void)
+{
+    nvs_handle_t nvs;
+    esp_err_t err = nvs_open(CRASH_DIAG_NVS_NAMESPACE, NVS_READWRITE, &nvs);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "reset_boot_count: NVS open failed: %s", esp_err_to_name(err));
+        return;
+    }
+    err = nvs_set_u32(nvs, CRASH_DIAG_NVS_BOOT_COUNT, 0);
+    if (err == ESP_OK) {
+        err = nvs_commit(nvs);
+    }
+    nvs_close(nvs);
+
+    if (err == ESP_OK) {
+        s_current_diag.boot_count = 0;
+        rtc_data.boot_count_copy  = 0;
+        ESP_LOGI(TAG, "Boot count reset to 0");
+    } else {
+        ESP_LOGE(TAG, "reset_boot_count: write failed: %s", esp_err_to_name(err));
+    }
+}
