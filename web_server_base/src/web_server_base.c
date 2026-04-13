@@ -25,6 +25,7 @@ extern esp_err_t ota_upload_transport_flash(httpd_req_t *req);
 
 static const char *TAG = "wsb";
 static httpd_handle_t s_server = NULL;
+static web_server_base_config_t s_cfg_copy;
 static const web_server_base_config_t *s_cfg = NULL;
 static char *s_setup_html = NULL;
 
@@ -719,7 +720,8 @@ static esp_err_t handle_not_found(httpd_req_t *req, httpd_err_code_t err)
 esp_err_t web_server_base_start(const web_server_base_config_t *cfg)
 {
     if (!cfg) return ESP_ERR_INVALID_ARG;
-    s_cfg = cfg;
+    s_cfg_copy = *cfg;
+    s_cfg = &s_cfg_copy;
 
     /* Build parameterised setup page */
     s_setup_html = malloc(4608);
