@@ -779,8 +779,9 @@ esp_err_t web_server_base_start(const web_server_base_config_t *cfg)
 
     /* Start background OTA check (first check fires 15 s after init) */
     ota_check_config_t ota_cfg = {
-        .image_type    = cfg->ota_image_type,
-        .nvs_namespace = cfg->nvs_namespace,
+        .image_type      = cfg->ota_image_type,
+        .current_version = cfg->current_version_hex,
+        .nvs_namespace   = cfg->nvs_namespace,
     };
     ota_check_init(&ota_cfg);
 

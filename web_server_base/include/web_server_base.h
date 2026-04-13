@@ -33,6 +33,10 @@ typedef struct {
     /** OTA image type for this device variant, forwarded to ota_check_init(). */
     uint16_t ota_image_type;
 
+    /** Running firmware version as hex, e.g. FIRMWARE_VERSION. Forwarded to
+     *  ota_check_init() so it can compare against the latest index entry. */
+    uint32_t current_version_hex;
+
     /* Web asset binary data — from target_add_binary_data() in CMakeLists.txt.
      * Size = end - start (TEXT mode adds a null byte that is stripped). */
     const uint8_t *index_html_start;
