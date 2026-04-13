@@ -465,6 +465,19 @@ static esp_err_t handle_get_status(httpd_req_t *req)
         (ws < (wifi_mgr_state_t)(sizeof(wifi_state_names) / sizeof(wifi_state_names[0])))
             ? wifi_state_names[ws] : "unknown");
 
+    /* SSID of connected AP (STA mode only) */
+    if (ws == WIFI_MGR_STATE_STA_CONNECTED) {
+        wifi_ap_record_t ap_info = {};
+        if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
+            cJSON_AddStringToObject(root, "ssid", (char *)ap_info.ssid);
+        }
+    }
+    /* Device hostname */
+    char hostname_buf[33] = {};
+    if (wifi_manager_get_hostname(hostname_buf, sizeof(hostname_buf))) {
+        cJSON_AddStringToObject(root, "hostname", hostname_buf);
+    }
+
     send_json(req, 200, root);
     cJSON_Delete(root);
     return ESP_OK;
