@@ -722,9 +722,9 @@ esp_err_t web_server_base_start(const web_server_base_config_t *cfg)
     s_cfg = cfg;
 
     /* Build parameterised setup page */
-    s_setup_html = malloc(2304);
+    s_setup_html = malloc(4608);
     if (s_setup_html) {
-        snprintf(s_setup_html, 2304, SETUP_HTML_TMPL,
+        snprintf(s_setup_html, 4608, SETUP_HTML_TMPL,
                  cfg->device_name,      /* title */
                  cfg->device_name,      /* h1    */
                  cfg->firmware_version);/* badge */
