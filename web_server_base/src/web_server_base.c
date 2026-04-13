@@ -300,6 +300,82 @@ static esp_err_t handle_style_css(httpd_req_t *req)
 }
 
 /* ================================================================== */
+/*  GET /wifi.js — shared WiFi tab logic                              */
+/* ================================================================== */
+
+static const char WIFI_JS[] =
+    "(function(){'use strict';"
+    "function notify(m,t){if(typeof window.toast==='function')window.toast(m,t||'');else alert(m);}"
+    "function wfScan(){"
+    "var s=document.getElementById('wifi-net-select');if(!s)return;"
+    "s.innerHTML='<option value=\"\">Scanning\u2026</option>';s.disabled=true;"
+    "fetch('/api/wifi-scan').then(function(r){return r.json();}).then(function(n){"
+    "s.innerHTML='';"
+    "(n||[]).sort(function(a,b){return b.rssi-a.rssi;}).forEach(function(x){"
+    "var o=document.createElement('option');o.value=x.ssid;"
+    "o.textContent=x.ssid+'  ('+x.rssi+' dBm)';s.appendChild(o);});"
+    "addOpts(s);s.disabled=false;wfOnChange();"
+    "}).catch(function(){s.innerHTML='';addOpts(s);s.disabled=false;wfOnChange();});}"
+    "function addOpts(s){"
+    "var m=document.createElement('option');m.value='__manual__';"
+    "m.textContent='\u2014 Enter SSID manually \u2014';s.appendChild(m);"
+    "var r=document.createElement('option');r.value='__reset__';"
+    "r.textContent='\u2014 Reset WiFi / AP mode \u2014';s.appendChild(r);}"
+    "function wfOnChange(){"
+    "var v=(document.getElementById('wifi-net-select')||{}).value||'';"
+    "var mr=document.getElementById('wifi-manual-row');"
+    "var pr=document.getElementById('wifi-password-row');"
+    "var hr=document.getElementById('wifi-hostname-row');"
+    "var b=document.getElementById('wifi-action-btn');"
+    "if(mr)mr.style.display=v==='__manual__'?'':'none';"
+    "if(pr)pr.style.display=v==='__reset__'?'none':'';"
+    "if(hr)hr.style.display=v==='__reset__'?'none':'';"
+    "if(b){"
+    "if(v==='__reset__'){"
+    "b.className=b.dataset.resetClass||'btn danger';"
+    "b.textContent='\u21ba Reset WiFi';"
+    "}else{"
+    "b.className=b.dataset.connectClass||'btn primary';"
+    "b.textContent='\u2713 Connect';}}}"
+    "function wfAction(){"
+    "var v=(document.getElementById('wifi-net-select')||{}).value||'';"
+    "if(v==='__reset__'){"
+    "if(!confirm('Clear WiFi credentials and reboot to AP mode?'))return;"
+    "fetch('/api/wifi-reset',{method:'POST'})"
+    ".then(function(){notify('Rebooting in AP mode\u2026','ok');})"
+    ".catch(function(){notify('Request failed','err');});return;}"
+    "var ssid=v==='__manual__'"
+    "?((document.getElementById('wifi-manual-ssid')||{}).value||'').trim():v;"
+    "var pass=(document.getElementById('wifi-password')||{}).value||'';"
+    "var host=((document.getElementById('wifi-hostname')||{}).value||'').trim();"
+    "if(!ssid){notify('Select or enter a network SSID','err');return;}"
+    "if(!host){notify('Hostname is required','err');return;}"
+    "if(!/^[A-Za-z0-9-]+$/.test(host)){notify('Hostname: letters, numbers and hyphens only','err');return;}"
+    "fetch('/api/wifi',{method:'POST',headers:{'Content-Type':'application/json'},"
+    "body:JSON.stringify({ssid:ssid,password:pass,hostname:host})})"
+    ".then(function(r){return r.json();})"
+    ".then(function(d){"
+    "if(d.status==='ok'){"
+    "notify('Connecting to '+ssid+'\u2026','ok');"
+    "if(d.hostname)setTimeout(function(){window.location.href='http://'+d.hostname+'/';},3000);"
+    "}else notify('Error: '+(d.error||'unknown'),'err');})"
+    ".catch(function(){notify('Request failed','err');});}"
+    "document.addEventListener('DOMContentLoaded',function(){"
+    "var h=document.getElementById('wifi-hostname');"
+    "if(h&&window.location.hostname)h.value=window.location.hostname;"
+    "setTimeout(wfScan,500);});"
+    "window.wfScan=wfScan;window.wfOnChange=wfOnChange;window.wfAction=wfAction;"
+    "})();";
+
+static esp_err_t handle_wifi_js(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "application/javascript");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    httpd_resp_sendstr(req, WIFI_JS);
+    return ESP_OK;
+}
+
+/* ================================================================== */
 /*  Captive portal probes                                              */
 /* ================================================================== */
 
@@ -751,6 +827,7 @@ esp_err_t web_server_base_start(const web_server_base_config_t *cfg)
         { .uri = "/",                    .method = HTTP_GET,  .handler = handle_root            },
         { .uri = "/app.js",              .method = HTTP_GET,  .handler = handle_app_js          },
         { .uri = "/style.css",           .method = HTTP_GET,  .handler = handle_style_css       },
+        { .uri = "/wifi.js",             .method = HTTP_GET,  .handler = handle_wifi_js         },
         { .uri = "/generate_204",        .method = HTTP_GET,  .handler = handle_generate_204    },
         { .uri = "/hotspot-detect.html", .method = HTTP_GET,  .handler = handle_hotspot_detect  },
         { .uri = "/ncsi.txt",            .method = HTTP_GET,  .handler = handle_ncsi            },
