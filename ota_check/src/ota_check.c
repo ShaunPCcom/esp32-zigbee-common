@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 #include "ota_check.h"
-#include "version.h"
 #include "zigbee_ota.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
@@ -35,7 +34,8 @@ static SemaphoreHandle_t  s_mutex = NULL;
 static char               s_buf[INDEX_BUF_SIZE];   /* static — not on task stack */
 
 /* Device-specific config (set in ota_check_init) */
-static uint16_t s_image_type  = 0;
+static uint16_t s_image_type      = 0;
+static uint32_t s_current_version = 0;
 static char     s_nvs_namespace[NVS_NAMESPACE_MAX] = "";
 
 /* ── Core HTTP check ───────────────────────────────────────────────────── */
@@ -107,7 +107,7 @@ static void do_check(void)
             continue;
         }
 
-        if (latest_hex > FIRMWARE_VERSION) {
+        if (latest_hex > s_current_version) {
             s_available = true;
             uint8_t maj = (latest_hex >> 16) & 0xFF;
             uint8_t min = (latest_hex >>  8) & 0xFF;
@@ -194,7 +194,8 @@ void ota_check_init(const ota_check_config_t *cfg)
         ESP_LOGE(TAG, "ota_check_init: invalid config");
         return;
     }
-    s_image_type = cfg->image_type;
+    s_image_type      = cfg->image_type;
+    s_current_version = cfg->current_version;
     strlcpy(s_nvs_namespace, cfg->nvs_namespace, sizeof(s_nvs_namespace));
 
     s_mutex = xSemaphoreCreateMutex();

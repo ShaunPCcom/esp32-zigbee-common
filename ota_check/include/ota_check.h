@@ -12,8 +12,9 @@
  */
 
 typedef struct {
-    uint16_t    image_type;    /**< OTA image type for this device variant, e.g. 0x0003 */
-    const char *nvs_namespace; /**< NVS namespace for persisting interval and URL */
+    uint16_t    image_type;      /**< OTA image type for this device variant, e.g. 0x0003 */
+    uint32_t    current_version; /**< Running firmware version hex, e.g. FIRMWARE_VERSION */
+    const char *nvs_namespace;   /**< NVS namespace for persisting interval and URL */
 } ota_check_config_t;
 
 /**
