@@ -123,22 +123,30 @@ void esp_zb_app_signal_handler(esp_zb_app_signal_t *signal_struct)
                 board_led_set_state_pairing();
                 esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_NETWORK_STEERING);
             } else {
+#if CONFIG_IDF_TARGET_ESP32C6
+                /* C6 End Device: passive Device_annce depends on a healthy
+                 * parent link. If the parent dropped us while rebooting, the
+                 * announce goes nowhere and we stay invisible to Z2M.
+                 * NETWORK_STEERING uses cached credentials to re-establish
+                 * the parent association and emits Device_annce as part of
+                 * the rejoin — robust to stale parent state. */
+                ESP_LOGI(TAG, "Device rebooted (C6 ED) — rejoining to re-establish parent link");
+                board_led_set_state_pairing();
+                esp_zb_bdb_start_top_level_commissioning(ESP_ZB_BDB_NETWORK_STEERING);
+#else
                 ESP_LOGI(TAG, "Device rebooted, already joined network");
                 board_led_set_state_joined();
                 s_network_joined = true;
                 if (s_hooks && s_hooks->on_joined) {
                     s_hooks->on_joined();
                 }
-#if CONFIG_IDF_TARGET_ESP32C6
-                /* C6 runs as End Device — unlike a Router it sends no routing
-                 * announcements on boot, so Z2M won't detect the device is back
-                 * without an explicit ZDO Device_annce broadcast. */
-                esp_zb_zdo_device_announcement_req();
 #endif
             }
         } else {
-            ESP_LOGE(TAG, "Device start/reboot failed: %s", esp_err_to_name(status));
+            ESP_LOGE(TAG, "Device start/reboot failed: %s, retrying steering in 5s",
+                     esp_err_to_name(status));
             board_led_set_state_error();
+            esp_zb_scheduler_alarm(steering_retry_cb, ESP_ZB_BDB_NETWORK_STEERING, 5000);
         }
         break;
 
